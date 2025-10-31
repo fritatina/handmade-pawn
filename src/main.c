@@ -124,12 +124,15 @@ typedef struct
 
     undo_move_info move_history[MAX_GAME_MOVES];
 
+    s32 piece_list[13][10];
+
 } board;
 
 static s32 Global_Square120To64[BOARD_SQUARE_COUNT];
 static s32 Global_Square64To120[64];
 
-#define FILE_AND_RANK_TO_SQUARE120(f, r) ( (21 + (f)) + ((r) * 10))
+#define FILE_AND_RANK_TO_SQUARE_120(f, r) ( (21 + (f)) + ((r) * 10))
+#define SQUARE_64(square120) (Global_Square120To64[square120]) 
 
 void InitSquare120To64()
 {
@@ -148,12 +151,37 @@ void InitSquare120To64()
     {
         for(s32 file = File_A; file <= File_H; file++)
         {
-            s32 square = FILE_AND_RANK_TO_SQUARE120(file, rank);
+            s32 square = FILE_AND_RANK_TO_SQUARE_120(file, rank);
             Global_Square64To120[square64] = square;
             Global_Square120To64[square] = square64;
             square64++;
         }
     }
+}
+
+void PrintBitBoard(u64 bit_board)
+{
+    printf("\n");
+    for(s32 rank = Rank_8; rank >= Rank_1; rank--)
+    {
+        for(s32 file = File_A; file <= File_H; file++)
+        {
+            s32 square = FILE_AND_RANK_TO_SQUARE_120(file, rank);
+            s32 square64 = SQUARE_64(square);
+
+            u64 shift = 1ULL << square64;
+            if(shift & bit_board)
+            {
+                printf(" X ");
+            }
+            else
+            {
+                printf(" - ");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 int main(void)
@@ -173,6 +201,11 @@ int main(void)
         if(i % 8 == 0) printf("\n");
         printf("%5d", Global_Square64To120[i]);
     }
+
+    u64 bit_board = 0ULL;
+    bit_board = bit_board | (1ULL << SQUARE_64(B2));
+    bit_board = bit_board | (1ULL << SQUARE_64(F6));
+    PrintBitBoard(bit_board);
 
     return(0);
 }
